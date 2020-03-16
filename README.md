@@ -1,4 +1,4 @@
-# LH Ventures Coding Challenge
+# Coding Challenge
 
 Your task is to finish the Redux `mapStateToProps` function to a program to help an accountant to get balances from accounting journals.
 
