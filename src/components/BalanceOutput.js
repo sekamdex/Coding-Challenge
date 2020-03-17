@@ -78,7 +78,53 @@ BalanceOutput.propTypes = {
 export default connect(state => {
   let balance = [];
 
-  /* YOUR CODE GOES HERE */
+  let wildcardAccount = (pos) => {
+    let reducer = (prev, curr) => {
+      let condition = prev.ACCOUNT < curr.ACCOUNT;
+      if (pos === 'last') condition = prev.ACCOUNT > curr.ACCOUNT;  
+      return condition ? prev : curr
+    };
+
+    return (state.accounts.length > 0) ? state.accounts.reduce(reducer).ACCOUNT : null;
+  };
+
+  let wildcardPeriod = (pos) => {
+    let reducer = (prev, curr) => {
+      let condition = new Date(prev.PERIOD) < new Date(curr.PERIOD);
+      if (pos === 'last') condition = new Date(prev.PERIOD) > new Date(curr.PERIOD);  
+      return condition ? prev : curr;
+    };
+    
+    return (state.journalEntries.length > 0) ? state.journalEntries.reduce(reducer).PERIOD : null;
+  };
+
+  const startPeriod = new Date(new Date(state.userInput.startPeriod).getMonth() ? state.userInput.startPeriod : wildcardPeriod());
+  const endPeriod = new Date(new Date(state.userInput.endPeriod).getMonth() ? state.userInput.endPeriod : wildcardPeriod('last'));
+
+  const startAccount = (state.userInput.startAccount) ? state.userInput.startAccount : wildcardAccount();
+  const endAccount = (state.userInput.endAccount) ? state.userInput.endAccount : wildcardAccount('last');
+
+  let byRange = (entry) => {
+    const period = new Date(entry.PERIOD);
+    const inPeriodRange = period >= startPeriod && period <= endPeriod;
+    const inAccountRange = entry.ACCOUNT >= startAccount && entry.ACCOUNT <= endAccount;
+
+    return (inPeriodRange && inAccountRange);
+  };
+
+  let balanceSet = (entry) => {
+    const acc = state.accounts.find(item => item.ACCOUNT === entry.ACCOUNT);
+    
+    return {
+      ACCOUNT: entry.ACCOUNT,
+      DESCRIPTION: (acc) ? acc.LABEL : '',
+      DEBIT: entry.DEBIT,
+      CREDIT: entry.CREDIT,
+      BALANCE: entry.DEBIT - entry.CREDIT
+    };
+  };
+
+  balance = state.journalEntries.filter(byRange).map(balanceSet);
 
   const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
   const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
