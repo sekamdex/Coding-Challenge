@@ -78,6 +78,8 @@ BalanceOutput.propTypes = {
 export default connect(state => {
   let balance = [];
 
+  const {accounts, journalEntries, userInput} = state;
+
   let wildcardAccount = (pos) => {
     let reducer = (prev, curr) => {
       let condition = prev.ACCOUNT < curr.ACCOUNT;
@@ -85,7 +87,7 @@ export default connect(state => {
       return condition ? prev : curr
     };
 
-    return (state.accounts.length > 0) ? state.accounts.reduce(reducer).ACCOUNT : null;
+    return (accounts.length > 0) ? accounts.reduce(reducer).ACCOUNT : null;
   };
 
   let wildcardPeriod = (pos) => {
@@ -95,14 +97,14 @@ export default connect(state => {
       return condition ? prev : curr;
     };
     
-    return (state.journalEntries.length > 0) ? state.journalEntries.reduce(reducer).PERIOD : null;
+    return (journalEntries.length > 0) ? journalEntries.reduce(reducer).PERIOD : null;
   };
 
-  const startPeriod = new Date(new Date(state.userInput.startPeriod).getMonth() ? state.userInput.startPeriod : wildcardPeriod());
-  const endPeriod = new Date(new Date(state.userInput.endPeriod).getMonth() ? state.userInput.endPeriod : wildcardPeriod('last'));
+  const startPeriod = new Date(new Date(userInput.startPeriod).getMonth() ? userInput.startPeriod : wildcardPeriod());
+  const endPeriod = new Date(new Date(userInput.endPeriod).getMonth() ? userInput.endPeriod : wildcardPeriod('last'));
 
-  const startAccount = (state.userInput.startAccount) ? state.userInput.startAccount : wildcardAccount();
-  const endAccount = (state.userInput.endAccount) ? state.userInput.endAccount : wildcardAccount('last');
+  const startAccount = (userInput.startAccount) ? userInput.startAccount : wildcardAccount();
+  const endAccount = (userInput.endAccount) ? userInput.endAccount : wildcardAccount('last');
 
   let byRange = (entry) => {
     const period = new Date(entry.PERIOD);
@@ -113,7 +115,7 @@ export default connect(state => {
   };
 
   let balanceSet = (entry) => {
-    const acc = state.accounts.find(item => item.ACCOUNT === entry.ACCOUNT);
+    const acc = accounts.find(item => item.ACCOUNT === entry.ACCOUNT);
     
     return {
       ACCOUNT: entry.ACCOUNT,
@@ -124,7 +126,7 @@ export default connect(state => {
     };
   };
 
-  balance = state.journalEntries.filter(byRange).map(balanceSet);
+  balance = journalEntries.filter(byRange).map(balanceSet);
 
   const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
   const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
