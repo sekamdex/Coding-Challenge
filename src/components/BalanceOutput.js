@@ -80,22 +80,11 @@ export default connect(state => {
 
   const {accounts, journalEntries, userInput} = state;
 
-  let wildcardPeriod = (pos) => {
-    let reducer = (prev, curr) => {
-      let condition = new Date(prev.PERIOD) < new Date(curr.PERIOD);
-      if (pos === 'last') condition = new Date(prev.PERIOD) > new Date(curr.PERIOD);  
-      return condition ? prev : curr;
-    };
-    
-    return (journalEntries.length > 0) ? journalEntries.reduce(reducer).PERIOD : null;
-  };
-
-  const startPeriod = new Date(new Date(userInput.startPeriod).getMonth() ? userInput.startPeriod : wildcardPeriod());
-  const endPeriod = new Date(new Date(userInput.endPeriod).getMonth() ? userInput.endPeriod : wildcardPeriod('last'));
-
   let byRange = (entry) => {
-    const period = new Date(entry.PERIOD);
-    const inPeriodRange = period >= startPeriod && period <= endPeriod;
+    const inPeriodRange = (
+      (isNaN(userInput.startPeriod.getMonth()) || entry.PERIOD >= userInput.startPeriod) &&
+      (isNaN(userInput.endPeriod.getMonth()) || entry.PERIOD <= userInput.endPeriod)
+    );
 
     const inAccountRange = (
       (isNaN(userInput.startAccount) || entry.ACCOUNT >= userInput.startAccount) &&
