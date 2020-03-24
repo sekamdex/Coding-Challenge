@@ -80,7 +80,7 @@ export default connect(state => {
 
   const {accounts, journalEntries, userInput} = state;
 
-  let byRange = (entry) => {
+  const byRange = (entry) => {
     const inPeriodRange = (
       (isNaN(userInput.startPeriod.getMonth()) || entry.PERIOD >= userInput.startPeriod) &&
       (isNaN(userInput.endPeriod.getMonth()) || entry.PERIOD <= userInput.endPeriod)
@@ -94,7 +94,7 @@ export default connect(state => {
     return (inPeriodRange && inAccountRange);
   };
 
-  let balanceSet = (entry) => {
+  const balanceSet = (entry) => {
     const acc = accounts.find(item => item.ACCOUNT === entry.ACCOUNT);
     
     return {
@@ -106,7 +106,9 @@ export default connect(state => {
     };
   };
 
-  balance = journalEntries.filter(byRange).map(balanceSet);
+  const byAccount = (prev, curr) => prev.ACCOUNT - curr.ACCOUNT;
+
+  balance = journalEntries.filter(byRange).map(balanceSet).sort(byAccount);
 
   const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
   const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
